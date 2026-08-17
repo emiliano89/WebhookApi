@@ -37,34 +37,36 @@ export class WhatsAppAdapter implements ChannelAdapter {
     );
   }
 
-  private normalizeMessage(
-    value: WhatsAppWebhookDto['entry'][number]['changes'][number]['value'],
-  ): NormalizedWebhookEvent {
+private normalizeMessage(
+  value: WhatsAppWebhookDto['entry'][number]['changes'][number]['value'],
+): NormalizedWebhookEvent {
 
-    const message = value.messages![0];
+  const message = value.messages![0];
 
-    if (message.type !== 'text' || !message.text) {
-      throw new BadRequestException(
-        `Unsupported WhatsApp message type: ${message.type}`,
-      );
-    }
-
-    return {
-      channel: 'WHATSAPP',
-      type: 'MESSAGE',
-      externalUserId: message.from,
-      externalMessageId: message.id,
-      text: message.text.body,
-      timestamp: new Date(
-        Number(message.timestamp) * 1000,
-      ),
-      metadata: {
-        phoneNumberId: value.metadata.phone_number_id,
-        displayPhoneNumber:
-          value.metadata.display_phone_number,
-      },
-    };
+  if (message.type !== 'text' || !message.text) {
+    throw new BadRequestException(
+      `Unsupported WhatsApp message type: ${message.type}`,
+    );
   }
+
+  return {
+    channel: 'WHATSAPP',
+    type: 'MESSAGE',
+    externalUserId: message.from,
+    externalMessageId: message.id,
+    text: message.text.body,
+    timestamp: new Date(
+      Number(message.timestamp) * 1000,
+    ),
+    metadata: {
+      phoneNumberId: value.metadata.phone_number_id,
+      displayPhoneNumber:
+        value.metadata.display_phone_number,
+      displayName:
+        value.contacts?.[0]?.profile?.name,
+    },
+  };
+}
 
   private normalizeStatus(
     value: WhatsAppWebhookDto['entry'][number]['changes'][number]['value'],
