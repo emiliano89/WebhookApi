@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { WebhookModule } from './webhook/webhook.module';
 import { ServicesModule } from './services/services.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -26,6 +27,8 @@ import { ServicesModule } from './services/services.module';
     WebhookModule,
 
     ServicesModule,
+
+    ProductsModule,
   ],
 })
 export class AppModule {}
