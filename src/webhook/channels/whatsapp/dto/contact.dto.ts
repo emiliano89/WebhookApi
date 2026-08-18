@@ -5,16 +5,16 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class WhatsAppProfileDto {
+export class ProfileDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
 }
 
-export class WhatsAppContactDto {
+export class ContactDto {
   @ValidateNested()
-  @Type(() => WhatsAppProfileDto)
-  profile!: WhatsAppProfileDto;
+  @Type(() => ProfileDto)
+  profile!: ProfileDto;
 
   @IsString()
   @IsNotEmpty()

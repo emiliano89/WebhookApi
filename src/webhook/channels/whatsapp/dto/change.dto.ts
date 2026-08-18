@@ -1,13 +1,13 @@
 import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { WhatsAppValueDto } from './whatsapp-value.dto';
+import { ValueDto } from './value.dto';
 
-export class WhatsAppChangeDto {
+export class ChangeDto {
   @IsString()
   @IsNotEmpty()
   field!: string;
 
   @ValidateNested()
-  @Type(() => WhatsAppValueDto)
-  value!: WhatsAppValueDto;
+  @Type(() => ValueDto)
+  value!: ValueDto;
 }

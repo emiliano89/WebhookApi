@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ChannelAdapter } from '../adapters/channel.adapter';
-import { WhatsAppAdapter } from '../adapters/whatsapp.adapter';
+import { ChannelAdapter } from '../shared/adapters/channel.adapter';
+import { WhatsAppAdapter } from '../channels/whatsapp/whatsapp.adapter';
 
 @Injectable()
 export class ChannelRegistryService {

@@ -3,17 +3,17 @@ import {
   Injectable,
 } from '@nestjs/common';
 
-import { ChannelAdapter } from './channel.adapter';
-import { WhatsAppWebhookDto } from '../dto/whatsapp-webhook.dto';
+import { ChannelAdapter } from '../../shared/adapters/channel.adapter';
+import { WebhookDto } from './dto/webhook.dto';
 import {
   NormalizedWebhookEvent,
-} from '../models/normalized-webhook-event';
+} from '../../shared/models/normalized-webhook-event';
 
 @Injectable()
 export class WhatsAppAdapter implements ChannelAdapter {
 
   normalize(payload: unknown): NormalizedWebhookEvent {
-    const webhook = payload as WhatsAppWebhookDto;
+    const webhook = payload as WebhookDto;
 
     const value =
       webhook.entry?.[0]?.changes?.[0]?.value;
@@ -38,7 +38,7 @@ export class WhatsAppAdapter implements ChannelAdapter {
   }
 
 private normalizeMessage(
-  value: WhatsAppWebhookDto['entry'][number]['changes'][number]['value'],
+  value: WebhookDto['entry'][number]['changes'][number]['value'],
 ): NormalizedWebhookEvent {
 
   const message = value.messages![0];
@@ -69,7 +69,7 @@ private normalizeMessage(
 }
 
   private normalizeStatus(
-    value: WhatsAppWebhookDto['entry'][number]['changes'][number]['value'],
+    value: WebhookDto['entry'][number]['changes'][number]['value'],
   ): NormalizedWebhookEvent {
 
     const status = value.statuses![0];

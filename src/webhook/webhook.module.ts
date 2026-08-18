@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { WebhookController } from './webhook.controller';
 import { WebhookService } from './webhook.service';
-import { WhatsAppAdapter } from './adapters/whatsapp.adapter';
+import { WhatsAppAdapter } from './channels/whatsapp/whatsapp.adapter';
 import { ChannelRegistryService } from './registry/channel-registry.service';
 
 import { ChannelsModule } from '../channels/channels.module';

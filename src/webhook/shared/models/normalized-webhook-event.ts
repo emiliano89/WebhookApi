@@ -1,12 +1,15 @@
-export interface NormalizedMessage {
+export interface NormalizedWebhookEvent {
   channel: string;
   type: 'MESSAGE' | 'STATUS';
-  externalUserId: string;
+  externalUserId?: string;
   externalMessageId: string;
-  text: string;
+  text?: string;
   timestamp: Date;
+  status?: string;
+
   metadata?: {
     phoneNumberId?: string;
     displayPhoneNumber?: string;
+    displayName?: string;
   };
 }

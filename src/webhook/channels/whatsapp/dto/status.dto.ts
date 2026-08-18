@@ -4,7 +4,7 @@ import {
   IsString,
 } from 'class-validator';
 
-export class WhatsAppStatusDto {
+export class StatusDto {
   @IsString()
   @IsNotEmpty()
   id!: string;

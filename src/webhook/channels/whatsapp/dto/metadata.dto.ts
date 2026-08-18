@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class WhatsAppMetadataDto {
+export class MetadataDto {
   @IsString()
   @IsNotEmpty()
   display_phone_number!: string;

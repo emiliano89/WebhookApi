@@ -6,13 +6,13 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class WhatsAppTextDto {
+export class TextDto {
   @IsString()
   @IsNotEmpty()
   body!: string;
 }
 
-export class WhatsAppMessageDto {
+export class MessageDto {
   @IsString()
   @IsNotEmpty()
   from!: string;
@@ -31,6 +31,6 @@ export class WhatsAppMessageDto {
 
   @IsOptional()
   @ValidateNested()
-  @Type(() => WhatsAppTextDto)
-  text?: WhatsAppTextDto;
+  @Type(() => TextDto)
+  text?: TextDto;
 }

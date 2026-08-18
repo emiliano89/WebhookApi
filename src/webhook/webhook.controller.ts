@@ -1,6 +1,6 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { WebhookService } from './webhook.service';
-import { WhatsAppWebhookDto } from './dto/whatsapp-webhook.dto';
+import { WebhookDto } from './channels/whatsapp/dto/webhook.dto';
 
 @Controller('webhooks')
 export class WebhookController {
@@ -10,7 +10,7 @@ export class WebhookController {
   @Post(':channel')
   receive(
     @Param('channel') channel: string,
-    @Body() body: WhatsAppWebhookDto,
+    @Body() body: WebhookDto,
   ) {
     return this.webhookService.process(channel, body);
   }

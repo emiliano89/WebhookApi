@@ -1,14 +1,14 @@
 import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { WhatsAppEntryDto } from './whatsapp-entry.dto';
+import { EntryDto } from './entry.dto';
 
-export class WhatsAppWebhookDto {
+export class WebhookDto {
   @IsString()
   @IsNotEmpty()
   object!: string;
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => WhatsAppEntryDto)
-  entry!: WhatsAppEntryDto[];
+  @Type(() => EntryDto)
+  entry!: EntryDto[];
 }
