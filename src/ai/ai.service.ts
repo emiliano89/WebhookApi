@@ -3,6 +3,8 @@ import ollama from 'ollama';
 
 import { MessagesService } from '../messages/messages.service';
 import { ServicesService } from '../services/services.service';
+import { ProductsService } from '../products/products.service';
+import { AiToolsService } from './tools/ai-tools.service';
 
 @Injectable()
 export class AiService {
@@ -10,6 +12,8 @@ export class AiService {
   constructor(
     private readonly messagesService: MessagesService,
     private readonly servicesService: ServicesService,
+    private readonly productsService: ProductsService,
+    private readonly aiToolsService: AiToolsService,
   ) {}
 
   async generateResponse(
@@ -28,53 +32,124 @@ export class AiService {
         businessId,
       );
 
-    const servicesContext = services
-      .map((service) => {
-        return [
-          `Nombre: ${service.name}`,
-          `Descripción: ${service.description ?? 'Sin descripción'}`,
-          `Precio: ${service.price ?? 'Consultar'}`,
-          `Duración: ${service.durationMinutes ?? 'No especificada'} minutos`,
-        ].join('\n');
-      })
-      .join('\n\n');
+    const products =
+      await this.productsService.findActiveByBusiness(
+        businessId,
+      );
 
-    const ollamaMessages = messages.map((message) => ({
-      role: message.role.toLowerCase() as 'user' | 'assistant',
-      content: message.content,
-    }));
+    const servicesContext = services
+      .map((service) =>
+        `${service.name} - $${service.price ?? 'Consultar'}`,
+      )
+      .join('\n');
+
+    const productsContext = products
+      .map((product) =>
+        `${product.name} - $${product.price ?? 'Consultar'}`,
+      )
+      .join('\n');
+
+    // 1. Tipamos explícitamente el array con el tipo nativo de Ollama
+    const ollamaMessages: Array<{ role: 'user' | 'assistant' | 'system' | 'tool'; content: string; tool_calls?: any }> = [
+      {
+        role: 'system',
+        content: `
+Sos un asistente virtual de atención al cliente.
+
+Respondé directamente al cliente.
+No inventes información.
+Utilizá las herramientas disponibles cuando necesites información específica.
+
+Servicios:
+${servicesContext}
+
+Productos:
+${productsContext}
+        `.trim(),
+      },
+
+      ...messages.map((message) => {
+        // Aseguramos que el rol coincida exactamente con lo esperado
+        let role: 'user' | 'assistant' | 'system' = 'user';
+        const lowerRole = message.role.toLowerCase();
+        if (lowerRole === 'assistant') role = 'assistant';
+        if (lowerRole === 'system') role = 'system';
+
+        return {
+          role,
+          content: message.content,
+        };
+      }),
+    ];
+
+    const tools = [
+      {
+        type: 'function' as const,
+        function: {
+          name: 'get_service',
+          description:
+            'Obtiene información detallada sobre un servicio del negocio.',
+          parameters: {
+            type: 'object',
+            required: ['serviceName'],
+            properties: {
+              serviceName: {
+                type: 'string',
+                description:
+                  'Nombre del servicio que se quiere consultar',
+              },
+            },
+          },
+        },
+      },
+    ];
 
     const response = await ollama.chat({
       model: 'qwen2.5:7b',
-      messages: [
-        {
-  role: 'system',
-  content: `
-Sos el asistente virtual de atención al cliente de un negocio.
-
-Tu única tarea es responder directamente al último mensaje del cliente.
-
-REGLAS:
-- Respondé directamente al cliente.
-- No escribas ejemplos.
-- No escribas instrucciones.
-- No escribas "Si dice...", "Puedes responder..." ni frases similares.
-- No expliques cómo debería responder el asistente.
-- No inventes información.
-- Utilizá solamente la información disponible en el contexto del negocio y en la conversación.
-- Si no tenés información suficiente, decí que no disponés de ese dato.
-- Sé breve, natural y amable.
-- No menciones PostgreSQL, base de datos, contexto, prompts ni modelos de IA.
-
-INFORMACIÓN DEL NEGOCIO:
-
-${servicesContext}
-  `.trim(),
-},
-        ...ollamaMessages,
-      ],
+      messages: ollamaMessages,
+      tools,
     });
 
-    return response.message.content;
+    if (!response.message.tool_calls?.length) {
+      return response.message.content;
+    }
+
+    // 2. Agregamos la respuesta del asistente (que pide ejecutar la herramienta) al historial
+    ollamaMessages.push({
+      role: 'assistant',
+      content: response.message.content || '',
+      tool_calls: response.message.tool_calls,
+    });
+
+    for (const toolCall of response.message.tool_calls) {
+
+      if (toolCall.function.name === 'get_service') {
+
+        const args =
+          toolCall.function.arguments as {
+            serviceName: string;
+          };
+
+        const result =
+          await this.aiToolsService.getService(
+            businessId,
+            args.serviceName,
+          );
+
+        // 3. Agregamos el resultado de la ejecución con el rol 'tool'
+        ollamaMessages.push({
+          role: 'tool',
+          content: JSON.stringify(result),
+        });
+      }
+    }
+
+    const finalResponse = await ollama.chat({
+      model: 'qwen2.5:7b',
+      messages: ollamaMessages,
+      tools,
+    });
+
+    return finalResponse.message.content;
   }
 }

@@ -10,6 +10,7 @@ import { CustomersModule } from '../customers/customers.module';
 import { ConversationsModule } from '../conversations/conversation.module';
 import { MessagesModule } from '../messages/messages.module';
 import { AiModule } from '../ai/ai.module';
+import { OrdersModule } from '../orders/orders.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AiModule } from '../ai/ai.module';
     ConversationsModule,
     MessagesModule,
     AiModule,
+    OrdersModule,
   ],
   controllers: [
     WebhookController,
